@@ -1,4 +1,4 @@
-package day5_bca;
+package bbca;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
