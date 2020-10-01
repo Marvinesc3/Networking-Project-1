@@ -30,18 +30,19 @@ public class ChatServer {
                     System.out.printf("Connected to %s:%d on local port %d\n",
                         socket.getInetAddress(), socket.getPort(), socket.getLocalPort());
                     
-                    // This code should really be done in the separate thread
+                    //This code should really be done in the separate thread
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                     String name = socket.getInetAddress().getHostName();
 
                     ClientConnectionData client = new ClientConnectionData(socket, in, out, name);
-                    synchronized (clientList) {
-                        clientList.add(client);
-                    }
+
+                    // synchronized (clientList) {
+                    //     clientList.add(client);
+                    // }
                     
                     System.out.println("added client " + name);
-
+                    
                     //handle client business in another thread
                     pool.execute(new ServerClientHandler(clientList, client));
                 } catch (IOException ex) {
