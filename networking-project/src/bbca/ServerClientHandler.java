@@ -4,6 +4,9 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 
 
 public class ServerClientHandler implements Runnable {
@@ -12,8 +15,8 @@ public class ServerClientHandler implements Runnable {
     private ArrayList<ClientConnectionData> clientList;
 
     public ServerClientHandler(ArrayList<ClientConnectionData> clientList, ClientConnectionData client) {
-        this.client = client;
         this.clientList = clientList;
+        this.client = client;
     }
 
     /**
@@ -35,27 +38,46 @@ public class ServerClientHandler implements Runnable {
         
     }
 
+    public boolean isValid(String name) {
+        for(ClientConnectionData c : clientList) {
+            if(c.getUserName() != null && c.getUserName().equals(name))
+                return false;
+        }
+
+        Pattern pattern = Pattern.compile("[^\\W]+");
+        Matcher matcher = pattern.matcher(name);
+
+        return matcher.matches();
+    }
+
     @Override
     public void run() {
         try {
             BufferedReader in = client.getInput();
             //get userName, first message from user
             String userName = in.readLine().trim();
-            client.setUserName(userName);
+            while(!isValid(userName)) {
+                client.getOut().println("Invalid username! Username taken or name contains a non-word character");
+                userName = in.readLine().trim();
+            }
+
+            client.setUserName(userName.trim());
             //notify all that client has joined
+
+            synchronized (clientList) {
+                clientList.add(client);
+            }
+            
             broadcast(String.format("WELCOME %s", client.getUserName()));
 
             
             String incoming = "";
-
             while( (incoming = in.readLine()) != null) {
-                if (incoming.startsWith("CHAT")) {
-                    String chat = incoming.substring(4).trim();
-                    if (chat.length() > 0) {
-                        String msg = String.format("CHAT %s %s", client.getUserName(), chat);
-                        broadcast(msg);    
-                    }
-                } else if (incoming.startsWith("QUIT")){
+                String chat = incoming.trim();
+                String msg = String.format("%s:%s", client.getUserName(), chat);
+                broadcast(msg);
+
+                if (incoming.startsWith("QUIT")){
                     break;
                 }
             }

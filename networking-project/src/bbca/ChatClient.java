@@ -29,13 +29,12 @@ public class ChatClient {
         Thread t = new Thread(listener);
         t.start();
 
-        System.out.print("Chat sessions has started - enter a user name: ");
-        String name = userInput.nextLine().trim();
-        out.println(name); //out.flush();
-
+        
+        System.out.println("Entering chat...Welcome to the server! Enter a valid username: ");
+        
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {
-            String msg = String.format("CHAT %s", line); 
+            String msg = line; 
             out.println(msg);
             line = userInput.nextLine().trim();
         }

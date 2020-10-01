@@ -18,6 +18,7 @@ public class ClientServerHandler implements Runnable {
                 //WELCOME
                 //CHAT
                 //EXIT
+                //SUBMITNAME
                 System.out.println(incoming);
             }
         } catch (Exception ex) {

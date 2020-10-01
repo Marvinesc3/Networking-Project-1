@@ -58,5 +58,4 @@ public class ClientConnectionData {
         this.userName = userName;
     }
 
-    
 }
