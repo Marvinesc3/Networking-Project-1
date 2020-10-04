@@ -2,6 +2,7 @@ package bbca;
 
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.List;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -28,6 +29,40 @@ public class ServerClientHandler implements Runnable {
             synchronized (clientList) {
                 for (ClientConnectionData c : clientList){
                     c.getOut().println(msg);
+                    // c.getOut().flush();
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("broadcast caught exception: " + ex);
+            ex.printStackTrace();
+        }
+        
+    }
+
+    public void broadcast(String msg, ClientConnectionData client) {
+        try {
+            System.out.println("Broadcasting -- " + msg);
+            synchronized (clientList) {
+                for (ClientConnectionData c : clientList){
+                    if(!c.equals(client))
+                        c.getOut().println(msg);
+                    // c.getOut().flush();
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("broadcast caught exception: " + ex);
+            ex.printStackTrace();
+        }
+        
+    }
+
+    public void broadcast(String msg, String username) {
+        try {
+            System.out.println("Broadcasting -- " + msg);
+            synchronized (clientList) {
+                for (ClientConnectionData c : clientList){
+                    if(c.getUserName().equals(username))
+                        c.getOut().println(msg);
                     // c.getOut().flush();
                 }
             }
@@ -74,11 +109,24 @@ public class ServerClientHandler implements Runnable {
             String incoming = "";
             while( (incoming = in.readLine()) != null) {
                 String chat = incoming.trim();
-                String msg = String.format("%s:%s", client.getUserName(), chat);
-                broadcast(msg);
 
                 if (incoming.startsWith("QUIT")){
                     break;
+                } else if (incoming.startsWith("@")){
+                    try {
+                        Pattern p = Pattern.compile("(@[^\\W]+) (.*)");
+                        Matcher m = p.matcher(chat);
+                
+                        Boolean match = m.matches();
+                        String recipient = m.group(1);
+
+                        broadcast(client.getUserName() + " " + chat.replaceFirst(recipient, "[private]:"), recipient.substring(1));
+                    } catch(Exception e){
+                        System.out.println("Match not found");
+                    }
+                } else {
+                    String msg = String.format("%s:%s", client.getUserName(), chat);
+                    broadcast(msg, client);
                 }
             }
         } catch (Exception ex) {
