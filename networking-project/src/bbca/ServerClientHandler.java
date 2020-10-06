@@ -125,6 +125,32 @@ public class ServerClientHandler implements Runnable {
                         System.out.println("Match not found");
                     }
                 } else {
+                    String[] strarr = chat.split(" ", 5);
+                    for (int i = strarr.length - 1; i >= 0; i--){
+                        if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
+                            if (strarr[i].equals(":happy:")){
+                                chat = "😃";
+                            }
+                            else if (strarr[i].equals(":sad:")){
+                                chat = "😞";
+                            }
+                            else if (strarr[i].equals(":angry:")){
+                                chat = "😠";
+                            }
+                            else if (strarr[i].equals(":crying:")){
+                                chat = "😭";
+                            } 
+                            else if (strarr[i].equals(":lol:")){
+                                chat = "😂";
+                            }
+                            else if (strarr[i].equals(":love:")){
+                                chat = "🥰";
+                            }
+                            else if (strarr[i].equals(":cool:")){
+                                chat = "😎";
+                            }
+                        }
+                    }
                     String msg = String.format("%s:%s", client.getUserName(), chat);
                     broadcast(msg, client);
                 }
