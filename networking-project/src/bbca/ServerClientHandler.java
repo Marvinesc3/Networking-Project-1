@@ -107,6 +107,7 @@ public class ServerClientHandler implements Runnable {
 
             
             String incoming = "";
+            String[] emojis = {":happy:", "😃", ":sad:", "😞", ":angry:", "😠", ":crying:", "😭", ":lol:", "😂", ":love:", "😍", ":fire:", "🔥"};
             while( (incoming = in.readLine()) != null) {
                 String chat = incoming.trim();
 
@@ -125,29 +126,13 @@ public class ServerClientHandler implements Runnable {
                         System.out.println("Match not found");
                     }
                 } else {
-                    String[] strarr = chat.split(" ", 5);
+                    String[] strarr = chat.split(" ");
                     for (int i = strarr.length - 1; i >= 0; i--){
                         if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
-                            if (strarr[i].equals(":happy:")){
-                                chat = "😃";
-                            }
-                            else if (strarr[i].equals(":sad:")){
-                                chat = "😞";
-                            }
-                            else if (strarr[i].equals(":angry:")){
-                                chat = "😠";
-                            }
-                            else if (strarr[i].equals(":crying:")){
-                                chat = "😭";
-                            } 
-                            else if (strarr[i].equals(":lol:")){
-                                chat = "😂";
-                            }
-                            else if (strarr[i].equals(":love:")){
-                                chat = "🥰";
-                            }
-                            else if (strarr[i].equals(":cool:")){
-                                chat = "😎";
+                            for (int j = emojis.length-2; j >= 0; j = j-2){
+                                if (strarr[i].equals(emojis[j]))
+                                    chat = chat.replaceAll(strarr[i], emojis[j+1]);
+                                
                             }
                         }
                     }
