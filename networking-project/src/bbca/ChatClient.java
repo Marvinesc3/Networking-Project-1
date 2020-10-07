@@ -15,12 +15,12 @@ public class ChatClient {
         Scanner userInput = new Scanner(System.in);
         
         System.out.println("What's the server IP? ");
-        // String serverip = userInput.nextLine();
+        String serverip = userInput.nextLine();
         System.out.println("What's the server port? ");
-        // int port = userInput.nextInt();
-        // userInput.nextLine();
+        int port = userInput.nextInt();
+        userInput.nextLine();
 
-        socket = new Socket("localhost", 54321);
+        socket = new Socket(serverip, port);
         socketIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
 

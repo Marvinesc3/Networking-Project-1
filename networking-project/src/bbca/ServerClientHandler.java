@@ -40,7 +40,7 @@ public class ServerClientHandler implements Runnable {
 
     public void broadcast(String msg, ClientConnectionData client) {
         try {
-            System.out.println("Broadcasting -- " + msg);
+            System.out.println("CHAT " + msg);
             synchronized (clientList) {
                 for (ClientConnectionData c : clientList){
                     if(!c.equals(client))
@@ -57,7 +57,7 @@ public class ServerClientHandler implements Runnable {
 
     public void broadcast(String msg, String username) {
         try {
-            System.out.println("Broadcasting -- " + msg);
+            System.out.println("PCHAT " + msg);
             synchronized (clientList) {
                 for (ClientConnectionData c : clientList){
                     if(c.getUserName().equals(username))
@@ -114,31 +114,35 @@ public class ServerClientHandler implements Runnable {
     @Override
     public void run() {
         try {
+            System.out.println("SUBMITNAME");
             BufferedReader in = client.getInput();
             //get userName, first message from user
             String userName = in.readLine().trim();
             while(!isValid(userName)) {
-                client.getOut().println("Invalid username! Username taken or name contains a non-word character");
+                System.out.println("SUBMITNAME");
+                client.getOut().println("Invalid username! Username taken or name contains a non-word character.");
                 userName = in.readLine().trim();
             }
 
             client.setUserName(userName.trim());
+            System.out.println("NAME " + client.getUserName());
+
             //notify all that client has joined
 
             synchronized (clientList) {
                 clientList.add(client);
             }
             
-            broadcast(String.format("WELCOME %s", emoji(client.getUserName())));
+            System.out.println("WELCOME " + client.getUserName());
+            broadcast(String.format("%s has joined.", emoji(client.getUserName())));
 
             
             String incoming = "";
             
             while( (incoming = in.readLine()) != null) {
                 String chat = incoming.trim();
-                 
 
-                if (incoming.startsWith("QUIT")){
+                if (incoming.startsWith("/quit")){
                     break;
                 } else if (incoming.startsWith("@")){
                     try {
@@ -150,7 +154,7 @@ public class ServerClientHandler implements Runnable {
 
                         broadcast(client.getUserName() + " " + emoji(chat.replaceFirst(recipient, "[private]:")), recipient.substring(1));
                     } catch(Exception e){
-                        System.out.println("Match not found");
+                        System.out.println("Match not found.");
                     }
                 } else {
                     String msg = String.format("%s:%s", client.getUserName(), emoji(chat));
@@ -170,8 +174,9 @@ public class ServerClientHandler implements Runnable {
             synchronized (clientList) {
                 clientList.remove(client); 
             }
-            System.out.println(client.getName() + " has left.");
-            broadcast(String.format("EXIT %s", client.getUserName()));
+
+            System.out.println("EXIT " + client.getUserName());
+            broadcast(String.format("%s has left.", client.getUserName()));
             try {
                 client.getSocket().close();
             } catch (IOException ex) {}
