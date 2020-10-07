@@ -16,6 +16,4 @@ PCHAT: Input "@username CHAT" to chat privately with a user of your choice
 
 QUIT: Input "/quit" to end the client
 
-IDK: Input "idk" to do idk
-
 Thank you for using the BBCA UI Client!
