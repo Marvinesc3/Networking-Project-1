@@ -1,7 +1,7 @@
 package bbca;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -84,6 +84,33 @@ public class ServerClientHandler implements Runnable {
         return matcher.matches();
     }
 
+
+    ArrayList<String> emojis = new ArrayList<>(Arrays.asList (":happy:", "😃", ":sad:", "😞", 
+            ":angry:", "😠", ":crying:", "😭", ":lol:", "😂", ":love:", "😍", ":fire:", "🔥", 
+            ":wink:", "😉", "kiss", "😘", "crazy", "🤪	", "money", "🤑", "shush", "🤫", "think", "🤔", 
+            "meh", "😐", "gross", "🤢", "hot", "🥵", "party", "🥳", "poggers", "😲", "100", "💯", 
+            "hands", "🙏", "strong", "💪", "eyes", "👀", "cap", "🧢"));
+            
+    public String emoji (String msg){
+        String[] strarr = msg.split(" ");
+        for (int i = strarr.length - 1; i >= 0; i--){
+            if (strarr[0].equals("/list")){
+                String emojilist = "";
+                for(String s : emojis) 
+                    emojilist += s + " / ";
+                broadcast(emojilist);;
+            }
+            else if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
+
+                for (int j = emojis.size()-2; j >= 0; j = j-2){
+                    if (strarr[i].equals(emojis.get(j)))
+                        msg = msg.replace(strarr[i], emojis.get(j+1));
+                }
+            }
+        }
+        return msg;
+    }
+
     @Override
     public void run() {
         try {
@@ -102,13 +129,14 @@ public class ServerClientHandler implements Runnable {
                 clientList.add(client);
             }
             
-            broadcast(String.format("WELCOME %s", client.getUserName()));
+            broadcast(String.format("WELCOME %s", emoji(client.getUserName())));
 
             
             String incoming = "";
-            String[] emojis = {":happy:", "😃", ":sad:", "😞", ":angry:", "😠", ":crying:", "😭", ":lol:", "😂", ":love:", "😍", ":fire:", "🔥"};
+            
             while( (incoming = in.readLine()) != null) {
                 String chat = incoming.trim();
+                 
 
                 if (incoming.startsWith("QUIT")){
                     break;
@@ -120,22 +148,12 @@ public class ServerClientHandler implements Runnable {
                         Boolean match = m.matches();
                         String recipient = m.group(1);
 
-                        broadcast(client.getUserName() + " " + chat.replaceFirst(recipient, "[private]:"), recipient.substring(1));
+                        broadcast(client.getUserName() + " " + emoji(chat.replaceFirst(recipient, "[private]:")), recipient.substring(1));
                     } catch(Exception e){
                         System.out.println("Match not found");
                     }
                 } else {
-                    String[] strarr = chat.split(" ");
-                    for (int i = strarr.length - 1; i >= 0; i--){
-                        if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
-                            for (int j = emojis.length-2; j >= 0; j = j-2){
-                                if (strarr[i].equals(emojis[j]))
-                                    chat = chat.replaceAll(strarr[i], emojis[j+1]);
-                                
-                            }
-                        }
-                    }
-                    String msg = String.format("%s:%s", client.getUserName(), chat);
+                    String msg = String.format("%s:%s", client.getUserName(), emoji(chat));
                     broadcast(msg, client);
                 }
             }
