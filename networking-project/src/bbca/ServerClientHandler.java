@@ -145,7 +145,7 @@ public class ServerClientHandler implements Runnable {
                     try {
                         Pattern p = Pattern.compile("(@[^\\W]+) (.*)");
                         Matcher m = p.matcher(chat);
-                
+                 
                         Boolean match = m.matches();
                         String recipient = m.group(1);
 

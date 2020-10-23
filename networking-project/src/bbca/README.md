@@ -7,7 +7,7 @@ In the event that you did input a blank space, you will once again be prompted t
 
 You can now utilize the chat.
 Below are some of the chat functions:
-
+ 
 1. CHAT: Input anything
 2. PCHAT: Input "@username CHAT" to chat privately with a user (that has joined the chat) of your choice
 3. EMOJIS:
