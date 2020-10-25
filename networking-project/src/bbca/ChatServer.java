@@ -14,6 +14,8 @@ import java.io.PrintWriter;
 public class ChatServer {
     public static final int PORT = 54321;
     private static final ArrayList<ClientConnectionData> clientList = new ArrayList<>();
+    private static final ArrayList<String> clientNames = new ArrayList<>();
+
 
     public static void main(String[] args) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(100);
@@ -43,8 +45,8 @@ public class ChatServer {
                     
                     System.out.println("added client " + name);
                     
-                    //handle client business in another thread
-                    pool.execute(new ServerClientHandler(clientList, client));
+                    // handle client business in another thread
+                    pool.execute(new ServerClientHandler(clientList, client, clientNames));
                 } catch (IOException ex) {
                     System.out.println(ex.getMessage());
                 }

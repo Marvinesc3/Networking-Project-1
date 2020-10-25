@@ -14,10 +14,13 @@ public class ServerClientHandler implements Runnable {
     // Maintain data about the client serviced by this thread
     private ClientConnectionData client;
     private ArrayList<ClientConnectionData> clientList;
+    private ArrayList<String> clientNames = new ArrayList<>();
 
-    public ServerClientHandler(ArrayList<ClientConnectionData> clientList, ClientConnectionData client) {
+
+    public ServerClientHandler(ArrayList<ClientConnectionData> clientList, ClientConnectionData client, ArrayList<String> clientNames) {
         this.clientList = clientList;
         this.client = client;
+        this.clientNames = clientNames;
     }
 
     /**
@@ -95,13 +98,7 @@ public class ServerClientHandler implements Runnable {
     public String emoji (String msg){
         String[] strarr = msg.split(" ");
         for (int i = strarr.length - 1; i >= 0; i--){
-            if (strarr[0].equals("/list")){
-                String emojilist = "";
-                for(String s : emojis) 
-                    emojilist += s + " / ";
-                broadcast(emojilist);;
-            }
-            else if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
+            if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
 
                 for (int j = emojis.size()-2; j >= 0; j = j-2){
                     if (strarr[i].equals(emojis.get(j)))
@@ -110,6 +107,10 @@ public class ServerClientHandler implements Runnable {
             }
         }
         return msg;
+    }
+
+    public void participants(){
+
     }
 
     @Override
@@ -128,10 +129,16 @@ public class ServerClientHandler implements Runnable {
 
             synchronized (clientList) {
                 clientList.add(client);
-            }
-            
-            broadcast(String.format("WELCOME %s", emoji(client.getUserName())));
 
+            }
+
+            synchronized(clientNames){
+                clientNames.add(client.getUserName());
+            }
+
+            System.out.println(clientNames);
+            broadcast(String.format("WELCOME %s", client.getUserName()));
+            broadcast(String.format("Chat Members: %s", clientNames));
             
             String incoming = "";
             
@@ -141,7 +148,15 @@ public class ServerClientHandler implements Runnable {
 
                 if (incoming.startsWith("QUIT")){
                     break;
-                } else if (incoming.startsWith("@")){
+                } 
+                else if (incoming.startsWith("/whoishere")){
+                    broadcast(String.format("%s", clientNames), client.getUserName());
+                }
+                else if (incoming.startsWith("/list")){
+                    broadcast(String.format("%s", emojis), client.getUserName());
+                }
+                
+                else if (incoming.startsWith("@")){
                     try {
                         Pattern p = Pattern.compile("(@[^\\W]+) (.*)");
                         Matcher m = p.matcher(chat);
@@ -171,7 +186,13 @@ public class ServerClientHandler implements Runnable {
             synchronized (clientList) {
                 clientList.remove(client); 
             }
+            synchronized(clientNames){
+                clientNames.remove(client.getUserName());
+            }
+
+
             System.out.println(client.getName() + " has left.");
+            System.out.println(clientNames);
             broadcast(String.format("EXIT %s", client.getUserName()));
             try {
                 client.getSocket().close();

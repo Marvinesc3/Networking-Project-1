@@ -8,11 +8,12 @@ In the event that you did input a blank space, you will once again be prompted t
 You can now utilize the chat.
 Below are some of the chat functions:
  
-1. CHAT: Input anything
-2. PCHAT: Input "@username CHAT" to chat privately with a user (that has joined the chat) of your choice
-3. EMOJIS:
+1. CHAT: Input anything to chat with others in the chat room
+2. PARTICPANTS: Input "/whoishere" to view all current particpants in the chat room
+3. PCHAT: Input "@username CHAT" to chat privately with a user (that has joined the chat) of your choice
+4. EMOJIS:
     a. Input ":EMOJINAME:" to send an emoji of your choice (from the available list) to the chat.
     b. Input "/list" to get a list of all available emojis and their names.
-4. QUIT: Input "QUIT" to end the client
+5. QUIT: Input "QUIT" to end the client
 
 Thank you for using the BBCA UI Client!
