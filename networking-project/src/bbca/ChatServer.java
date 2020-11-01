@@ -1,8 +1,9 @@
 package bbca;
-
+ 
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.io.BufferedReader;
@@ -12,6 +13,9 @@ import java.io.PrintWriter;
 
 public class ChatServer {
     public static final int PORT = 54321;
+    private static final ArrayList<ClientConnectionData> clientList = new ArrayList<>();
+    private static final ArrayList<String> clientNames = new ArrayList<>();
+
 
     public static void main(String[] args) throws Exception {
         ExecutorService pool = Executors.newFixedThreadPool(100);
@@ -28,20 +32,21 @@ public class ChatServer {
                     System.out.printf("Connected to %s:%d on local port %d\n",
                         socket.getInetAddress(), socket.getPort(), socket.getLocalPort());
                     
-                    // This code should really be done in the separate thread
+                    //This code should really be done in the separate thread
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                     String name = socket.getInetAddress().getHostName();
 
                     ClientConnectionData client = new ClientConnectionData(socket, in, out, name);
-                    synchronized (ServerClientHandler.clientList) {
-                        ServerClientHandler.clientList.add(client);
-                    }
+
+                    // synchronized (clientList) {
+                    //     clientList.add(client);
+                    // }
                     
                     System.out.println("added client " + name);
-
+                    
                     // handle client business in another thread
-                    pool.execute(new ServerClientHandler(client));
+                    pool.execute(new ServerClientHandler(clientList, client, clientNames));
                 } catch (IOException ex) {
                     System.out.println(ex.getMessage());
                 }
@@ -49,8 +54,6 @@ public class ChatServer {
             }
         } 
     }
-}
-
 
     // Inner class 
     // static class ClientHandler implements Runnable {
@@ -127,3 +130,4 @@ public class ChatServer {
     //     }
         
     // }
+}

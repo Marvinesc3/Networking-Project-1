@@ -5,16 +5,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+
 
 public class ServerClientHandler implements Runnable {
     // Maintain data about the client serviced by this thread
-    ClientConnectionData client;
-    public static final ArrayList<ClientConnectionData> clientList = new ArrayList<>();
+    private ClientConnectionData client;
+    private ArrayList<ClientConnectionData> clientList;
+    private ArrayList<String> clientNames = new ArrayList<>();
 
-    public ServerClientHandler(ClientConnectionData client) {
+
+    public ServerClientHandler(ArrayList<ClientConnectionData> clientList, ClientConnectionData client, ArrayList<String> clientNames) {
+        this.clientList = clientList;
         this.client = client;
+        this.clientNames = clientNames;
     }
 
     /**
@@ -33,28 +39,12 @@ public class ServerClientHandler implements Runnable {
             System.out.println("broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
-    }
-
-    public void broadcast(String msg, String username) {
-        try {
-            System.out.println("Broadcasting -- " + msg);
-            synchronized (clientList) {
-                for (ClientConnectionData c : clientList){
-                    if(!(c.getUserName() == null) && client.getUserName().equals(username))
-                        c.getOut().println(msg);
-                    // c.getOut().flush();
-                }
-            }
-        } catch (Exception ex) {
-            System.out.println("broadcast caught exception: " + ex);
-            ex.printStackTrace();
-        }
         
     }
 
-    public void broadcastExcept(String msg, ClientConnectionData client) {
+    public void broadcast(String msg, ClientConnectionData client) {
         try {
-            System.out.println("Broadcasting -- " + msg);            
+            System.out.println("Broadcasting -- " + msg);
             synchronized (clientList) {
                 for (ClientConnectionData c : clientList){
                     if(!c.equals(client))
@@ -66,14 +56,15 @@ public class ServerClientHandler implements Runnable {
             System.out.println("broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
+        
     }
 
-    public void broadcast(String msg, ClientConnectionData client) {
+    public void broadcast(String msg, String username) {
         try {
-            System.out.println("Broadcasting -- " + msg);            
+            System.out.println("Broadcasting -- " + msg);
             synchronized (clientList) {
                 for (ClientConnectionData c : clientList){
-                    if(c.equals(client))
+                    if(c.getUserName().equals(username))
                         c.getOut().println(msg);
                     // c.getOut().flush();
                 }
@@ -82,6 +73,7 @@ public class ServerClientHandler implements Runnable {
             System.out.println("broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
+        
     }
 
     public boolean isValid(String name) {
@@ -96,6 +88,7 @@ public class ServerClientHandler implements Runnable {
         return matcher.matches();
     }
 
+
     ArrayList<String> emojis = new ArrayList<>(Arrays.asList (":happy:", "😃", ":sad:", "😞", 
             ":angry:", "😠", ":crying:", "😭", ":lol:", "😂", ":love:", "😍", ":fire:", "🔥", 
             ":wink:", "😉", "kiss", "😘", "crazy", "🤪	", "money", "🤑", "shush", "🤫", "think", "🤔", 
@@ -105,13 +98,7 @@ public class ServerClientHandler implements Runnable {
     public String emoji (String msg){
         String[] strarr = msg.split(" ");
         for (int i = strarr.length - 1; i >= 0; i--){
-            if (strarr[0].equals("/list")){
-                String emojilist = "";
-                for(String s : emojis) 
-                    emojilist += s + " / ";
-                broadcast(emojilist);;
-            }
-            else if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
+            if (strarr[i].startsWith(":") && strarr[i].endsWith(":")){
 
                 for (int j = emojis.size()-2; j >= 0; j = j-2){
                     if (strarr[i].equals(emojis.get(j)))
@@ -122,60 +109,68 @@ public class ServerClientHandler implements Runnable {
         return msg;
     }
 
+    public void participants(){
+
+    }
+
     @Override
     public void run() {
         try {
             BufferedReader in = client.getInput();
-            String incoming = "";
-
-            broadcast("SUBMITNAME", client);
-            boolean validName = false;
-            String userName = "";
-
-            while (!validName && (incoming = in.readLine()) != null) {
-                if (incoming.startsWith("NAME")) {
-                    String name = incoming.substring(4).trim();
-                    if (isValid(name)) {
-                        validName = true;
-                        userName = name;
-                    }
-                }
-
-                if (!validName) {
-                    broadcast("RESUBMITNAME", client);
-                }
+            //get userName, first message from user
+            String userName = in.readLine().trim();
+            while(!isValid(userName)) {
+                client.getOut().println("Invalid username! Username taken or name contains a non-word character");
+                userName = in.readLine().trim();
             }
 
             client.setUserName(userName.trim());
-            broadcast("CONFIRMNAME", client.getName());
             //notify all that client has joined
-            broadcast(String.format("WELCOME %s", client.getUserName()));
 
-            incoming = "";
+            synchronized (clientList) {
+                clientList.add(client);
+
+            }
+
+            synchronized(clientNames){
+                clientNames.add(client.getUserName());
+            }
+
+            System.out.println(clientNames);
+            broadcast(String.format("WELCOME %s", client.getUserName()));
+            broadcast(String.format("Chat Members: %s", clientNames));
+            
+            String incoming = "";
+            
             while( (incoming = in.readLine()) != null) {
+                String chat = incoming.trim();
+                 
+
                 if (incoming.startsWith("QUIT")){
                     break;
-                } else if (incoming.startsWith("PCHAT")) {
-                    String chat = incoming.trim();
-                    try {
-                        Pattern p = Pattern.compile("PCHAT ([^\\W]+) (.*)");
-                        Matcher m = p.matcher(chat);
+                } 
+                else if (incoming.startsWith("/whoishere")){
+                    broadcast(String.format("%s", clientNames), client.getUserName());
+                }
+                else if (incoming.startsWith("/list")){
+                    broadcast(String.format("%s", emojis), client.getUserName());
+                }
                 
+                else if (incoming.startsWith("@")){
+                    try {
+                        Pattern p = Pattern.compile("(@[^\\W]+) (.*)");
+                        Matcher m = p.matcher(chat);
+                 
                         Boolean match = m.matches();
                         String recipient = m.group(1);
-                        String line = m.group(2);
-                        
-                        String msg = String.format("PCHAT %s %s", client.getUserName(), line);
-                        broadcast(msg, recipient);
-                        // broadcast(client.getUserName() + " " + emoji(chat.replaceFirst(recipient, "[private]:")), recipient.substring(1));
+
+                        broadcast(client.getUserName() + " " + emoji(chat.replaceFirst(recipient, "[private]:")), recipient.substring(1));
                     } catch(Exception e){
-                        System.out.println("Match not found.");
+                        System.out.println("Match not found");
                     }
                 } else {
-                    //CHAT
-                    String chat = incoming.substring(4).trim();
-                    String msg = String.format("CHAT %s %s", client.getUserName(), emoji(chat));
-                    broadcastExcept(msg, client);
+                    String msg = String.format("%s:%s", client.getUserName(), emoji(chat));
+                    broadcast(msg, client);
                 }
             }
         } catch (Exception ex) {
@@ -191,8 +186,13 @@ public class ServerClientHandler implements Runnable {
             synchronized (clientList) {
                 clientList.remove(client); 
             }
+            synchronized(clientNames){
+                clientNames.remove(client.getUserName());
+            }
+
 
             System.out.println(client.getName() + " has left.");
+            System.out.println(clientNames);
             broadcast(String.format("EXIT %s", client.getUserName()));
             try {
                 client.getSocket().close();
