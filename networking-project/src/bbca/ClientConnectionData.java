@@ -1,17 +1,17 @@
 package bbca;
 
-import java.io.BufferedReader;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class ClientConnectionData {
     private Socket socket;
-    private BufferedReader input;
-    private PrintWriter out;
+    private ObjectInputStream input;
+    private ObjectOutputStream out;
     private String name;
     private String userName;
 
-    public ClientConnectionData(Socket socket, BufferedReader input, PrintWriter out, String name) {
+    public ClientConnectionData(Socket socket, ObjectInputStream input, ObjectOutputStream out, String name) {
         this.socket = socket;
         this.input = input;
         this.out = out;
@@ -26,26 +26,26 @@ public class ClientConnectionData {
         this.socket = socket;
     }
 
-    public BufferedReader getInput() {
+    public ObjectInputStream getInput() {
         return input;
     }
 
-    public void setInput(BufferedReader input) {
+    public void setInput(ObjectInputStream input) {
         this.input = input;
     }
 
-    public PrintWriter getOut() {
+    public ObjectOutputStream getOut() {
         return out;
     }
 
-    public void setOut(PrintWriter out) {
+    public void setOut(ObjectOutputStream out) {
         this.out = out;
     }
 
     public String getName() {
         return name;
     }
- 
+
     public void setName(String name) {
         this.name = name;
     }
@@ -57,5 +57,4 @@ public class ClientConnectionData {
     public void setUserName(String userName) {
         this.userName = userName;
     }
-
 }
