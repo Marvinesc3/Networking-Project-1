@@ -1,8 +1,5 @@
 package bbca;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 import java.io.ObjectInputStream;
@@ -35,31 +32,30 @@ public class ChatClient {
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {
             if (listener.state == 1) {
-                out.writeObject(new Message(Message.HEADER_NAME, line));
+                out.writeObject(new Message(Message.MSG_HEADER_NAME, line));
                 line = userInput.nextLine().trim();
             } else if (listener.state == 2) {
                 if (line.startsWith("@")) {
-                    boolean readingMentions = true;
                     ArrayList<String> names = new ArrayList<String>();
-                    String message = "";
+                    boolean mentioned = true;
+                    String msg = "";
 
-                    String[] contents = line.split(" ");
-
-                    for (int i = 0; i < contents.length; i++) {
-                        if (readingMentions) {
-                            if (contents[i].startsWith("@")) {
-                                names.add(contents[i].substring(1));
+                    String[] words = line.split(" ");
+                    for (int i = 0; i < words.length; i++) {
+                        if (mentioned) {
+                            if (words[i].startsWith("@")) {
+                                names.add(words[i].substring(1));
                             } else {
-                                readingMentions = false;
-                                message += contents[i];
+                                mentioned = false;
+                                msg += words[i];
                             }
                         } else {
-                            message += contents[i];
+                            msg += words[i];
                         }
                     }
 
-                    if (message.length() > 0) {
-                        out.writeObject(new Message(Message.HEADER_PCHAT, message, names));
+                    if (msg.length() > 0) {
+                        out.writeObject(new Message(Message.MSG_HEADER_PCHAT, msg, names));
                         line = userInput.nextLine().trim();
                     }
                 } else if (line.toLowerCase().startsWith("/whoishere")) {
@@ -67,12 +63,12 @@ public class ChatClient {
                     System.out.println(ClientServerHandler.namesList);
                     line = userInput.nextLine().trim();
                 } else {
-                    out.writeObject(new Message(Message.HEADER_CHAT, line));
+                    out.writeObject(new Message(Message.MSG_HEADER_CHAT, line));
                     line = userInput.nextLine().trim();
                 }
             }
         }
-        out.writeObject(new Message(Message.HEADER_QUIT));
+        out.writeObject(new Message(Message.MSG_HEADER_QUIT));
         out.close();
         userInput.close();
         socketIn.close();

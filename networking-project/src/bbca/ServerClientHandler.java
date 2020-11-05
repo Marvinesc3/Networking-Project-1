@@ -1,21 +1,13 @@
 package bbca;
 
-import java.net.Inet4Address;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
 
 
 public class ServerClientHandler implements Runnable {
@@ -37,7 +29,7 @@ public class ServerClientHandler implements Runnable {
                 }
             }
         } catch (Exception ex) {
-            System.out.println("broadcast caught exception: " + ex);
+            System.out.println("Broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
     }
@@ -51,7 +43,7 @@ public class ServerClientHandler implements Runnable {
                 }
             }
         } catch (Exception ex) {
-            System.out.println("broadcast caught exception: " + ex);
+            System.out.println("Broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
     }
@@ -81,12 +73,12 @@ public class ServerClientHandler implements Runnable {
                 }
             }
         } catch (Exception ex) {
-            System.out.println("broadcast caught exception: " + ex);
+            System.out.println("Broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
     }
 
-    public String emoji (String msg){
+    public String emoji (String msg) {
         ArrayList<String> emojis = new ArrayList<>(Arrays.asList (":happy:", "😃", ":sad:", "😞", 
             ":angry:", "😠", ":crying:", "😭", ":lol:", "😂", ":love:", "😍", ":fire:", "🔥", 
             ":wink:", "😉", ":kiss:", "😘", ":crazy:", "🤪	", ":money:", "🤑", ":shush:", "🤫", ":think:", "🤔", 
@@ -112,36 +104,36 @@ public class ServerClientHandler implements Runnable {
         try {
             ObjectInputStream in = client.getInput();
             Message incoming;
-            
             boolean isValid = false;
             String username = "";
-            BroadcastToClientName(new Message(Message.HEADER_SUBMIT), client.getName());
+            BroadcastToClientName(new Message(Message.MSG_HEADER_SUBMIT), client.getName());
             
 
             while (!isValid) {
                 incoming = (Message) in.readObject();
-                if (incoming.getHeader() == Message.HEADER_NAME) {
+                if (incoming.getHeader() == Message.MSG_HEADER_NAME) {
                     String name = incoming.getMsg();
                     if (name.length() > 0) {
                         Pattern pattern = Pattern.compile("[^\\W]+");
                         Matcher matcher = pattern.matcher(name);
 
                         if (matcher.matches()) {
-                            isValid = true;
                             username = name;
-                        }
-                    }
-                }
-                if (!isValid) {
-                    BroadcastToClientName(new Message(Message.HEADER_RESUBMIT), client.getName());
-                } else {
-                    for (ClientConnectionData c : clientList) {
-                        System.out.println(c.getUserName());
-                        isValid = !username.equals(c.getUserName());
-                    }
+                            isValid = true;
 
-                    if (!isValid) 
-                        BroadcastToClientName(new Message(Message.HEADER_NEWNAME), client.getName());
+                        }
+                    } 
+                }
+                if (isValid) {
+                    for (ClientConnectionData c : clientList) {
+                        isValid = !username.equals(c.getUserName()) && isValid;
+                        System.out.println(c.getUserName());
+                    }
+                    if (!isValid) {
+                        BroadcastToClientName(new Message(Message.MSG_HEADER_NEWNAME), client.getName());
+                    }
+                } else {
+                    BroadcastToClientName(new Message(Message.MSG_HEADER_RESUBMIT), client.getName());
                 }
             }
 
@@ -160,19 +152,19 @@ public class ServerClientHandler implements Runnable {
                 }
             }
 
-            Broadcast(new Message(Message.HEADER_NAMELIST, namesList));
-            BroadcastToClientName(new Message(Message.HEADER_CONFIRM, username), client.getName());
+            Broadcast(new Message(Message.MSG_HEADER_NAMELIST, namesList));
+            BroadcastToClientName(new Message(Message.MSG_HEADER_VALID, username), client.getName());
             //notify all that client has joined
-            Broadcast(new Message(Message.HEADER_WELCOME, client.getUserName()));
+            Broadcast(new Message(Message.MSG_HEADER_WELCOME, client.getUserName()));
 
             while(true) {
                 incoming = (Message) in.readObject();
-                if (incoming.getHeader() == Message.HEADER_CHAT) {
+                if (incoming.getHeader() == Message.MSG_HEADER_CHAT) {
                     String chat = incoming.getMsg();
                     if (chat.length() > 0) {
-                        BroadcastSkipUserName(new Message(Message.HEADER_CHAT, emoji(chat), client.getUserName()), client.getUserName());    
+                        BroadcastSkipUserName(new Message(Message.MSG_HEADER_CHAT, emoji(chat), client.getUserName()), client.getUserName());    
                     }
-                } else if (incoming.getHeader() == Message.HEADER_PCHAT) {
+                } else if (incoming.getHeader() == Message.MSG_HEADER_PCHAT) {
                     String chat = incoming.getMsg();
                     ArrayList<String> recipients = incoming.getRecipients();
 
@@ -180,10 +172,10 @@ public class ServerClientHandler implements Runnable {
                         for (String recipient : recipients) {
                             if (client.getUserName().equals(recipient)) 
                                 continue;
-                            BroadcastToClientUserName(new Message(Message.HEADER_PCHAT, emoji(chat), client.getUserName()),recipient);
+                            BroadcastToClientUserName(new Message(Message.MSG_HEADER_PCHAT, emoji(chat), client.getUserName()),recipient);
                         }
                     }
-                } else if (incoming.getHeader() == Message.HEADER_QUIT) {
+                } else if (incoming.getHeader() == Message.MSG_HEADER_QUIT) {
                     break;
                 }
             }
@@ -202,7 +194,7 @@ public class ServerClientHandler implements Runnable {
             }
 
             System.out.println(client.getName() + " has left.");
-            Broadcast(new Message(Message.HEADER_EXIT, client.getUserName()));  
+            Broadcast(new Message(Message.MSG_HEADER_EXIT, client.getUserName()));  
             String namesList = "";
 
             synchronized (clientList) {
@@ -212,7 +204,7 @@ public class ServerClientHandler implements Runnable {
                 }
             }
 
-            Broadcast(new Message(Message.HEADER_NAMELIST, namesList));
+            Broadcast(new Message(Message.MSG_HEADER_NAMELIST, namesList));
             try {
                 client.getSocket().close();
             } catch (IOException ex) {}

@@ -4,19 +4,19 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class Message implements Serializable {
-    public static final long serialVersionUID = 4L;
+    public static final long serialVersionUID = 7L;
 
-    public static final int HEADER_SUBMIT = 0;
-    public static final int HEADER_RESUBMIT = 1;
-    public static final int HEADER_NEWNAME = 2;
-    public static final int HEADER_CONFIRM = 3;
-    public static final int HEADER_NAME = 4;
-    public static final int HEADER_WELCOME = 5;
-    public static final int HEADER_EXIT = 6;
-    public static final int HEADER_CHAT = 7;
-    public static final int HEADER_PCHAT = 8;
-    public static final int HEADER_QUIT = 9;
-    public static final int HEADER_NAMELIST = 10;
+    public static final int MSG_HEADER_SUBMIT = 0;
+    public static final int MSG_HEADER_RESUBMIT = 1;
+    public static final int MSG_HEADER_NEWNAME = 2;
+    public static final int MSG_HEADER_CONFIRM = 3;
+    public static final int MSG_HEADER_NAME = 4;
+    public static final int MSG_HEADER_WELCOME = 5;
+    public static final int MSG_HEADER_EXIT = 6;
+    public static final int MSG_HEADER_CHAT = 7;
+    public static final int MSG_HEADER_PCHAT = 8;
+    public static final int MSG_HEADER_QUIT = 9;
+    public static final int MSG_HEADER_NAMELIST = 10;
 
     private int header;
     private String sender;
