@@ -26,7 +26,7 @@ public class ClientServerHandler implements Runnable {
                     System.out.println("Invalid username! Username contains a non-word character. Enter a different username:");
                 } else if (incoming.getHeader() == Message.MSG_HEADER_NEWNAME) {
                     System.out.println("Username taken! Enter a different username:");
-                } else if (incoming.getHeader() == Message.MSG_HEADER_CONFIRM) {
+                } else if (incoming.getHeader() == Message.MSG_HEADER_VALID) {
                     state = 2;
                     System.out.println("List of chat members:");
                     System.out.println(ClientServerHandler.namesList);

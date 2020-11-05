@@ -9,7 +9,7 @@ public class Message implements Serializable {
     public static final int MSG_HEADER_SUBMIT = 0;
     public static final int MSG_HEADER_RESUBMIT = 1;
     public static final int MSG_HEADER_NEWNAME = 2;
-    public static final int MSG_HEADER_CONFIRM = 3;
+    public static final int MSG_HEADER_VALID = 3;
     public static final int MSG_HEADER_NAME = 4;
     public static final int MSG_HEADER_WELCOME = 5;
     public static final int MSG_HEADER_EXIT = 6;
