@@ -59,7 +59,7 @@ public class ServerClientHandler implements Runnable {
                 }
             }
         } catch (Exception ex) {
-            System.out.println("broadcast caught exception: " + ex);
+            System.out.println("Broadcast caught exception: " + ex);
             ex.printStackTrace();
         }
     }

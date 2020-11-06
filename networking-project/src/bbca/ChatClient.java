@@ -14,16 +14,17 @@ public class ChatClient {
     public static void main(String[] args) throws Exception {
         Scanner userInput = new Scanner(System.in);
         
-        System.out.println("What's the server IP? ");
-        String serverip = "localhost";//userInput.nextLine();
-        System.out.println("What's the server port? ");
-        int port = 54321;//userInput.nextInt();
-        //userInput.nextLine();
+        System.out.println("What's the server IP?");
+        String serverip = userInput.nextLine();
+        System.out.println("What's the server port?");
+        int port = userInput.nextInt();
+        userInput.nextLine();
 
         socket = new Socket(serverip, port);
         
         out = new ObjectOutputStream(socket.getOutputStream());
         socketIn = new ObjectInputStream(socket.getInputStream());
+        
         // start a thread to listen for server messages
         ClientServerHandler listener = new ClientServerHandler(socketIn);
         Thread t = new Thread(listener);
@@ -31,15 +32,14 @@ public class ChatClient {
 
         String line = userInput.nextLine().trim();
         while(!line.toLowerCase().startsWith("/quit")) {
-            if (listener.state == 1) {
+            if (listener.status == 1) {
                 out.writeObject(new Message(Message.MSG_HEADER_NAME, line));
                 line = userInput.nextLine().trim();
-            } else if (listener.state == 2) {
+            } else if (listener.status == 2) {
                 if (line.startsWith("@")) {
                     ArrayList<String> names = new ArrayList<String>();
                     boolean mentioned = true;
                     String msg = "";
-
                     String[] words = line.split(" ");
                     for (int i = 0; i < words.length; i++) {
                         if (mentioned) {
@@ -53,12 +53,11 @@ public class ChatClient {
                             msg += words[i];
                         }
                     }
-
                     if (msg.length() > 0) {
                         out.writeObject(new Message(Message.MSG_HEADER_PCHAT, msg, names));
                         line = userInput.nextLine().trim();
                     }
-                } else if (line.toLowerCase().startsWith("/whoishere")) {
+                } else if (line.startsWith("/whoishere")) {
                     System.out.println("List of chat members:");
                     System.out.println(ClientServerHandler.namesList);
                     line = userInput.nextLine().trim();

@@ -15,5 +15,6 @@ Below are some of the chat functions:
     a. Input ":EMOJINAME:" to send an emoji of your choice (from the available list) to the chat.
     b. Input "/list" to get a list of all available emojis and their names.
 5. QUIT: Input "QUIT" to end the client
+6. GUI: Enjoy using our brand new GUI client!
 
 Thank you for using the BBCA UI Client!
