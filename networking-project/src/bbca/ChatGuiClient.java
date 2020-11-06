@@ -309,73 +309,88 @@ public class ChatGuiClient extends Application {
                 in = new ObjectInputStream(socket.getInputStream());
                 appRunning = true;
                 while (appRunning) {
+
                     Message incoming = (Message) in.readObject();
-                    if (incoming.getHeader() == Message.MSG_HEADER_SUBMIT) {
-                        status = 1;
-                        Platform.runLater(() -> {
-                            try {
-                                out.writeObject(new Message(Message.MSG_HEADER_NAME, getName()));
-                            } catch (IOException ex) {}
-                        });
-                    }
-                     else if (incoming.getHeader() == Message.MSG_HEADER_RESUBMIT) {
-                        Platform.runLater(() -> {
-                            try {
-                                messageArea.appendText("Invalid username! Username contains a non-word character. Enter a different username:\n");
-                                out.writeObject(new Message(Message.MSG_HEADER_NAME, getName()));
-                            } catch (IOException ex) {}
-                        });
-                    } else if (incoming.getHeader() == Message.MSG_HEADER_NEWNAME) {
-                        Platform.runLater(() -> {
+                    switch (incoming.getHeader()) {
+                        case (Message.MSG_HEADER_SUBMIT):
+                            status = 1;
+                            Platform.runLater(() -> {
+                                try {
+                                    out.writeObject(new Message(Message.MSG_HEADER_NAME, getName()));
+                                } catch (IOException ex) {}
+                            });
+                            break;
+
+                        case (Message.MSG_HEADER_RESUBMIT):
+                            Platform.runLater(() -> {
+                                try {
+                                    messageArea.appendText("Invalid username! Username contains a non-word character. Enter a different username:\n");
+                                    out.writeObject(new Message(Message.MSG_HEADER_NAME, getName()));
+                                } catch (IOException ex) {}
+                            });
+                            break;
+
+                        case (Message.MSG_HEADER_NEWNAME):
+                            Platform.runLater(() -> {
                             try {
                                 messageArea.appendText("Username is already in use!. Enter a different username:\n");
                                 out.writeObject(new Message(Message.MSG_HEADER_NAME, getName()));
                             } catch (IOException ex) {}
                             messageArea.appendText("Username is already in use!. Enter a different username:\n");
-                        });
-                    }
-                    else if (incoming.getHeader() == Message.MSG_HEADER_VALID) {
-                        status = 2;
-                        Platform.runLater(() -> {
-                            sendButton.setDisable(false);
-                            funButton.setDisable(false);
-                        });
+                            });
+                            break;
 
+                        case (Message.MSG_HEADER_VALID):
+                            status = 2;
+                            Platform.runLater(() -> {
+                                sendButton.setDisable(false);
+                                funButton.setDisable(false);
+                            });
+                            break;
+
+                        case (Message.MSG_HEADER_WELCOME):
+                            String name = incoming.getMsg().trim();
+                            Platform.runLater(() -> {
+                                messageArea.appendText(String.format("%s has joined.\n", name));
+                            });
+                            break;
+
+                        case (Message.MSG_HEADER_NAMELIST):
+                            Platform.runLater(() -> {
+                                namesList = incoming.getMsg().trim();
+                                messageArea.appendText(String.format("List of chat members: %s\n", namesList));
+                            });
+                            break;
+
+                        case (Message.MSG_HEADER_CHAT):
+                            String text_chat = incoming.getMsg().trim();
+                            String sender_chat = incoming.getSender().trim();
+                            Platform.runLater(() -> {
+                                messageArea.appendText(String.format("%s: %s\n", sender_chat, text_chat));
+                            });
+                            break;
+
+                        case (Message.MSG_HEADER_PCHAT):
+                            String text_pchat = incoming.getMsg().trim();
+                            String sender_pchat = incoming.getSender().trim();
+                            Platform.runLater(() -> {
+                                messageArea.appendText(String.format("%s [private]: %s\n", sender_pchat, text_pchat));
+                            });
+                            break;
+
+                        case (Message.MSG_HEADER_EXIT):
+                            String name_exit = incoming.getMsg().trim();
+                            Platform.runLater(() -> {
+                                messageArea.appendText(String.format("%s has left the chat.\n", name_exit));
+                            });
+                            break;
+
+                        default:
+                            Platform.runLater(() -> {
+                                messageArea.appendText("" + incoming.getHeader() + "\n");
+                            });
+                        } 
                     }
-                    else if (incoming.getHeader() == Message.MSG_HEADER_WELCOME) {
-                        String name = incoming.getMsg().trim();
-                        Platform.runLater(() -> {
-                            messageArea.appendText(String.format("%s has joined.\n", name));
-                        });
-                    }
-                    else if (incoming.getHeader() == Message.MSG_HEADER_NAMELIST) {
-                        Platform.runLater(() -> {
-                            namesList = incoming.getMsg().trim();
-                            messageArea.appendText(String.format("List of chat members: %s\n", namesList));
-                        });
-                    }
-                    else if (incoming.getHeader() == Message.MSG_HEADER_CHAT) {
-                        String text = incoming.getMsg().trim();
-                        String sender = incoming.getSender().trim();
-                        Platform.runLater(() -> {
-                            messageArea.appendText(String.format("%s: %s\n", sender, text));
-                        });
-                    } else if (incoming.getHeader() == Message.MSG_HEADER_PCHAT) {
-                        String text = incoming.getMsg().trim();
-                        String sender = incoming.getSender().trim();
-                        Platform.runLater(() -> {
-                            messageArea.appendText(String.format("%s [private]: %s\n", sender, text));
-                        });
-                    } else if (incoming.getHeader() == Message.MSG_HEADER_EXIT) {
-                        String name = incoming.getMsg().trim();
-                        Platform.runLater(() -> {
-                            messageArea.appendText(String.format("%s has left the chat.\n", name));
-                        });
-                    } else {
-                        Platform.runLater(() -> {
-                            messageArea.appendText("" + incoming.getHeader() + "\n");
-                        });}
-                }
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (Exception e) {

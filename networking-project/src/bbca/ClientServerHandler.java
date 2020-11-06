@@ -31,7 +31,6 @@ public class ClientServerHandler implements Runnable {
                         System.out.println("Username taken! Enter a different username:");
                         break;
                     case (Message.MSG_HEADER_VALID):
-                        
                         System.out.println("List of chat members:");
                         System.out.println(ClientServerHandler.namesList);
                         status = 2;
